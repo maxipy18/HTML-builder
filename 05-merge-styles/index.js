@@ -1,6 +1,5 @@
 const fs = require('fs');
 const path = require('path');
-// const exec = require('child_process').exec;
 const distCss = path.join(__dirname, 'project-dist', 'bundle.css');
 
 fs.readdir(path.join(__dirname, 'project-dist'), (error, files) => {
