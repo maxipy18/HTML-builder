@@ -1,34 +1,24 @@
-const fs = require('fs');
+const fs = require('fs/promises');
 const path = require('path');
+const sourceCss = path.join(__dirname, 'styles');
 const distCss = path.join(__dirname, 'project-dist', 'bundle.css');
 
-fs.readdir(path.join(__dirname, 'project-dist'), (error, files) => {
-  if (error) return console.error(error.message);
-  files.forEach((file) => {
-    if (file === 'bundle.css') {
-      fs.unlink(distCss, (error) => {
-        if (error) return console.error(error.message);
-      });
-    }
-  });
-  fs.open(distCss, 'w', (error) => {
-    if (error) return console.error(error.message);
-  });
-});
-
-fs.readdir(path.join(__dirname, 'styles'), (error, files) => {
-  if (error) return console.error(error.message);
-  if (files.length) {
-    files.forEach((file) => {
+async function mergeStyle() {
+  try {
+    const styles = await fs.readdir(sourceCss);
+    await fs.open(distCss, 'w');
+    for await (const file of styles) {
       if (file.split('.').at(-1) === 'css') {
-        const fileCss = path.join(__dirname, 'styles', `${file}`);
-        fs.readFile(fileCss, 'utf-8', (error, data) => {
-          if (error) return console.error(error.message);
-          fs.appendFile(distCss, data, (error) => {
-            if (error) return console.error(error.message);
-          });
-        });
+        const fileCss = await fs.readFile(
+          path.join(sourceCss, `${file}`),
+          'utf-8',
+        );
+        await fs.writeFile(distCss, fileCss, { flag: 'a' });
       }
-    });
+    }
+  } catch (error) {
+    console.log(error);
   }
-});
+}
+
+mergeStyle();
